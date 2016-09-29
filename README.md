@@ -9,7 +9,7 @@ remove - O(logn)
 
 find - O(logn)
 
-Operations supported in the current version includes
+Operations supported in the current version include
 
 insert
 
@@ -21,7 +21,7 @@ max
 
 min
 
-Operations pending for implementation includes
+Operations pending for implementation include
 
 upper_bound
 
