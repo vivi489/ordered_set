@@ -21,6 +21,8 @@ max
 
 min
 
+built-in len() is supported
+
 Operations pending for implementation include
 
 upper_bound
