@@ -1,6 +1,6 @@
 #an ordered set implementation in AVL tree
 
-class Set:
+class Set(object):
     class Node:
         def __init__(self, key):
             self.height = 1
@@ -8,8 +8,8 @@ class Set:
             self.right = None
             self.key = key
 
-    def __init__(self):
-        self.root = None
+    def __init__(self, root=None):
+        self.root = root
         self.size = 0
         
     def _h(self, d):
@@ -69,9 +69,9 @@ class Set:
         if n is None:
             return None
         if key < n.key:
-            return self._remove(n.left, key)
+            n.left = self._remove(n.left, key)
         elif key > n.key:
-            return self._remove(n.right, key)
+            n.right = self._remove(n.right, key)
         else:
             self.size -= 1
             if n.left is None or n.right is None:
@@ -85,7 +85,7 @@ class Set:
                 n.right = self._remove(cur.key)
         if n is None:
             return n
-        n.height = max(_h(n.left), _h(n.right)) + 1
+        n.height = max(self._h(n.left), self._h(n.right)) + 1
         if self._h(n.left) - self._h(n.right) > 1:
             if self._h(n.left.left) > self._h(n.left.right): #left left case
                 return self._rightRotate(n)
@@ -95,7 +95,7 @@ class Set:
         if self._h(n.left) - self._h(n.right) < -1:
             if self._h(n.right.left) < self._h(n.right.right): #right right case
                 return self._leftRotate(n)
-            else:
+            else: #right left case
                 n.right = self._rightRotate(n.right)
                 return self._leftRotate(n)
         return n
@@ -112,10 +112,10 @@ class Set:
         return False
         
     def insert(self, key):
-        self.root = self._insert(self.root)
+        self.root = self._insert(self.root, key)
      
     def remove(self, key):
-        self.root = self._remove(self.root)
+        self.root = self._remove(self.root, key)
                 
     def clear(self):
         self.root = None
@@ -132,8 +132,68 @@ class Set:
         while cur is not None and cur.left is not None:
             cur = cur.left
         return cur           
-                
-print "helloworld"               
-                
-                
-                
+
+
+
+class TreeTest(Set):
+    def __init__(self, tree=None):
+        super(TreeTest, self).__init__()
+        self.tree = tree
+    
+    def from_serial(self, treelist):
+        if len(treelist) == 0:
+            return None
+        treelist.reverse()
+        root = Set.Node(treelist.pop())
+        cur = [root]
+        while len(cur) > 0:
+            next = []
+            for n in cur:
+                if len(treelist)==0: break
+                n.left = None if treelist[-1]=="#" else Set.Node(treelist[-1])
+                treelist.pop()
+                next.append(n.left)
+                if len(treelist)==0: break
+                n.right = None if treelist[-1]=="#" else Set.Node(treelist[-1])
+                treelist.pop()
+                next.append(n.right)
+            cur = next
+        self.tree = Set()
+        self.tree.root = root
+
+    def to_serial(self, print_height=False):
+        retVal = []
+        cur = [self.tree.root]
+        while len(cur) > 0:
+            next = []
+            for n in cur:
+                if print_height:
+                    retVal.append("#" if n is None else (str(n.key), n.height))
+                else:
+                    retVal.append("#" if n is None else str(n.key))
+                if n is None:
+                    continue
+                next.append(n.left); next.append(n.right)
+            cur = next
+        while len(retVal)>0 and retVal[-1]=='#':
+            retVal.pop()
+        return retVal
+
+
+if __name__ == "__main__":
+    print "hello"
+    
+    tree = Set()
+    for i in range(28, 0, -2):
+        tree.insert(i)
+    
+    tt = TreeTest(tree=tree)
+    print tt.to_serial()
+    tt.from_serial(tt.to_serial())
+    print tt.to_serial()
+
+
+
+
+
+
