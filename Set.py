@@ -113,6 +113,9 @@ class Set(object):
         
     def insert(self, key):
         self.root = self._insert(self.root, key)
+    
+    def update(self, keys):
+        for k in keys: self.insert(k)
      
     def remove(self, key):
         self.root = self._remove(self.root, key)
@@ -125,13 +128,13 @@ class Set(object):
         cur = self.root
         while cur is not None and cur.right is not None:
             cur = cur.right
-        return cur
+        return cur.key
                 
     def min(self):
         cur = self.root
         while cur is not None and cur.left is not None:
             cur = cur.left
-        return cur           
+        return cur.key
 
 
 

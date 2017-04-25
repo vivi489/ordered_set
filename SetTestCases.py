@@ -1,10 +1,14 @@
 #an ordered set implementation in AVL tree
-
+from __future__ import print_function
 from Set import Set
+import numpy as np
+from sys import stdout
+import time
 
-class TreeTest(object):
+
+class TreeTestHelper(object):
     def __init__(self, tree=None):
-        super(TreeTest, self).__init__()
+        super(TreeTestHelper, self).__init__()
         self.tree = tree
     
     def get_height(self, root):
@@ -41,18 +45,16 @@ class TreeTest(object):
 
     def height_validate(self):
         if self.tree.root is None: return True
-        cur_h = self.get_height(self.tree.root)
+        cur_h = 0
         cur = [self.tree.root]
         while len(cur) > 0:
             next = []
+            cur_h += 1
             for n in cur:
-                if not n.height == cur_h:
-                    return False
                 if n.left is not None: next.append(n.left)
                 if n.right is not None: next.append(n.right)
             cur = next
-            cur_h -= 1
-        return True
+        return cur_h == self.get_height(self.tree.root)
 
     def from_serial(self, treelist):
         if len(treelist) == 0:
@@ -111,27 +113,85 @@ class TreeTest(object):
     def get_size(self):
         return len(self.tree)
 
+    def traverse(self):
+        if self.tree.root is None:
+            return []
+        retVal = []
+        cur = self.tree.root
+        st = []
+        while cur.left is not None:
+            st.append(cur)
+            cur = cur.left
+        while cur is not None:
+            retVal.append(cur.key)
+            if cur.right is not None:
+                cur = cur.right
+                while cur.left is not None:
+                    st.append(cur)
+                    cur = cur.left
+            else:
+                if len(st) == 0: cur = None
+                else: cur = st.pop()
+        return retVal
+
+
+def propertyTest(epochs):
+    np.random.seed(long(time.time()))
+    print("starting property tests")
+    for e in range(epochs):
+        print("\rgenerate random tree #%d"%e, end="")
+        stdout.flush()
+        keys = (np.random.rand(20*epochs - 20*(e+1))*20000).astype(np.int32)
+        keys = list(set(keys))
+        tree = Set()
+        tree.update(keys)
+        tree.clear()
+        tree.update(keys)
+        keys.sort()
+        test = TreeTestHelper(tree=tree)
+        assert test.get_size()==len(keys), "Property Test Failure: size not matched"
+        assert test.bst_validate(), "Property Test Failure: BST is not valid"
+        assert test.balance_validate(), "Property Test Failure: unbalanced tree"
+        assert test.height_validate(), "Property Test Failure: incorrect tree height"
+        assert test.traverse()==keys, "Property Test Failure: incorrect inorder traversal output"
+    print("\nproperty tests ended")
+
+def functionalTest(epochs):
+    np.random.seed(long(time.time()))
+    print("starting functional tests")
+    for e in range(epochs):
+        print("\rgenerate random tree #%d"%e, end="")
+        stdout.flush()
+        keys = (np.random.rand(20*epochs - 20*(e+1))*20000).astype(np.int32)
+        keys = np.array(list(set(keys)))
+        tree = Set()
+        tree.update(keys)
+        tree.clear()
+        tree.update(keys)
+        keys.sort()
+        rand_queries = set((np.random.rand(20*epochs - 20*(e+1))*20000).astype(np.int32))
+        for q in rand_queries:
+            if q in keys: assert tree.find(q), "Functional Test Failure: key not found"
+            else: assert not tree.find(q), "Functional Test Failure: non-existing key found"
+        if len(keys)==0:
+            assert len(tree)==0, "Functional Test Failure: tree is not empty given no key"
+            continue
+        key_max, key_min = keys.max(), keys.min()
+        assert tree.max()==key_max, "Functional Test Failure: incorrect max key"
+        assert tree.min()==key_min, "Functional Test Failure: incorrect min key"
+    print("\nfunctional tests ended")
+
 
 if __name__ == "__main__":
     #TODO: test cases
-    print \
+    print(
     """
     1. Tree property tests (bst, height, size, balance)
     2. Functional tests (find, max, min, upper_bound, lower_bound)
     3. random r/w performance test
     """
-    
-    tree = Set()
-    for i in range(28, 0, -2):
-        tree.insert(i)
-    
-    tt = TreeTest(tree=tree)
-    print tt.to_serial(print_height=True)
-    #tt.from_serial(tt.to_serial())
-    #print tt.to_serial()
-    print tt.get_size()
-    print tt.bst_validate()
-    print tt.balance_validate()
-    print tt.height_validate()
+    )
+    propertyTest(200)
+    functionalTest(200)
 
 
